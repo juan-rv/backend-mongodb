@@ -25,16 +25,12 @@ const probando = (req, res) => {
 const crear = (req, res) => {
   //recoger los parametros por post a guardar
   let parametros = req.body;
-
   //validar los datos; libreria validator
-  //que no esten vacios
   try {
     let validar_titulo =
       !validator.isEmpty(parametros.titulo) &&
       validator.isLength(parametros.titulo, { min: 5, max: 30 });
-
-    let validar_contenido = validator.isEmpty(parametros.contenido);
-
+    let validar_contenido = !validator.isEmpty(parametros.contenido);
     if (!validar_titulo || !validar_contenido) {
       throw new Error("No se ha validado la informacion");
     }
@@ -44,13 +40,10 @@ const crear = (req, res) => {
       mensaje: "Faltan datos",
     });
   }
-
   //crear el objeto a guardar
   const articulo = new Articulo(parametros);
-
   //asignar valores a objeto en el modelo (manual o automatico)
   //articulo.titulo = parametros.titulo
-
   //guardar el articulo en la base de datos
   articulo.save().then(() => {
     try {
@@ -116,10 +109,62 @@ const uno = async (req, res) => {
   }
 };
 
+const borrar = async (req, res) => {
+  try {
+    let id = req.params.id;
+    const del = await Articulo.deleteOne({ _id: id });
+
+    if (del.deletedCount > 0) {
+      return res.status(200).json({
+        mensaje: "Articulo eliminado con exito",
+        articulo: del,
+      });
+    } else {
+      return res.status(400).json({
+        mensaje: "No se pudo encontrar el articulo con ese ID",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      mensaje: "Ha ocurrido un error con la busqueda",
+    });
+  }
+};
+
+const actualizar = async (req, res) => {
+  try {
+    let id = req.params.id;
+    let parametros = req.body;
+
+    const art = await Articulo.findOneAndUpdate({ _id: id }, parametros, {
+      new: true,
+    });
+    if (art) {
+      return res.status(200).json({
+        status: "succes",
+        data: art,
+        mensaje: "Articulo actualizado con exito",
+      });
+    } else {
+      return res.status(400).json({
+        status: "fail",
+        mensaje: "No se pudo actualizar un articulo con ese id",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      mensaje: "Ocurrio un error con la busqueda del articulo a editar",
+    });
+  }
+};
+
 module.exports = {
   prueba,
   probando,
   crear,
   listar,
   uno,
+  borrar,
+  actualizar,
 };

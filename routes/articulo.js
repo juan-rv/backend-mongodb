@@ -18,4 +18,9 @@ router.get("/articulos/:ultimos?", ArticuloController.listar);
 //traer uno
 router.get("/articulo/:id", ArticuloController.uno);
 
+//Eliminar uno
+router.delete("/delete/:id", ArticuloController.borrar);
+
+//actualizar uno
+router.put("/actualizar/:id", ArticuloController.actualizar);
 module.exports = router;
