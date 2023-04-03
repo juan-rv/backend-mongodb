@@ -32,7 +32,8 @@ const crear = (req, res) => {
     let validar_titulo =
       !validator.isEmpty(parametros.titulo) &&
       validator.isLength(parametros.titulo, { min: 5, max: 30 });
-    let validar_contenido = !validator.isEmpty(parametros.contenido);
+
+    let validar_contenido = validator.isEmpty(parametros.contenido);
 
     if (!validar_titulo || !validar_contenido) {
       throw new Error("No se ha validado la informacion");
@@ -51,18 +52,17 @@ const crear = (req, res) => {
   //articulo.titulo = parametros.titulo
 
   //guardar el articulo en la base de datos
-
   articulo.save().then(() => {
     try {
       return res.status(200).json({
         status: "succes",
         parametros: articulo,
-        mensaje: "artioculo creado con exito",
+        mensaje: "articulo creado con exito",
       });
     } catch (error) {
       return res.status(400).json({
         status: "Fail",
-        mensaje: "Perdiste el anio",
+        mensaje: "no se pudo guardar",
       });
     }
   });
@@ -95,21 +95,25 @@ const listar = async (req, res) => {
 };
 
 const uno = async (req, res) => {
-  //recoger un id por la url
-  let id = req.params.id;
-  //buscar el articulo por el metodo findOne
-  let lista = await Articulo.findById(id);
-  //si no existe devolver error]
-  if (!lista) {
-    return res.status(404).json({
-      mensaje: "no existe un articulo con ese id ",
+  try {
+    let id = req.params.id;
+    const articulo = await Articulo.findById(id);
+
+    if (articulo) {
+      return res.status(200).json({
+        mensaje: "Articulo encontrado",
+        articulo,
+      });
+    } else {
+      return res.status(404).json({
+        mensaje: "No se encontro ningun archivo con ese id",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      mensaje: "Ocurrio un error al buscar el articulo",
     });
   }
-  return res.status(200).json({
-    mensaje: "succes",
-    lista,
-  });
-  //si existe devuelve el resultado
 };
 
 module.exports = {
